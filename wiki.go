@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+    "regexp"
+    "errors"
 )
 
 type Page struct {
