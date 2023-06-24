@@ -11,23 +11,65 @@ import (
 type Page struct {
 	Title string
 	Body  []byte
+	Files  []string
+}
+
+// Task: Store templates in tmpl/ and page data in data/.
+
+var dataFolder string = "data"
+
+func checkExistsFolder(path string) (bool, error) {
+    _, err := os.Stat(path)
+    if err == nil { return true, nil }
+    if os.IsNotExist(err) { return false, nil }
+    return false, err
+}
+
+func createFolder(nameFolder string) {
+	check, errMsg := checkExistsFolder(nameFolder)
+	if errMsg != nil {
+		log.Fatal(errMsg)
+	}
+    if check == false {
+		err := os.Mkdir(nameFolder, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+    }
 }
 
 func (p *Page) save() error {
-	filename := p.Title + ".txt"
+	filename := dataFolder + "/" + p.Title + ".txt"
 	return os.WriteFile(filename, p.Body, 0600)
 }
 
+// Task: Implement inter-page linking by converting instances of [PageName] to
+// <a href="/view/PageName">PageName</a>. (hint: you could use regexp.ReplaceAllFunc to do this)
+func readavailableFiles(nameFolder string) ([]string) {
+	var myArr []string
+    entries, err := os.ReadDir("./"+nameFolder)
+    if err != nil {
+        log.Fatal(err)
+    }
+    sampleRegexp := regexp.MustCompile(`.txt`)
+    for _, e := range entries {
+		fileName := sampleRegexp.ReplaceAllString(e.Name(), "")
+		myArr = append(myArr, fileName)
+    }
+	return myArr
+}
+
 func loadPage(title string) (*Page, error) {
-	filename := title + ".txt"
+	filename := dataFolder + "/" + title + ".txt"
 	body, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	return &Page{Title: title, Body: body}, nil
+    fileArr := readavailableFiles(dataFolder)
+	return &Page{Title: title, Body: body, Files: fileArr}, nil
 }
 
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
     err := templates.ExecuteTemplate(w, tmpl+".html", p)
@@ -79,7 +121,14 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
     http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
+// Task: Add a handler to make the web root redirect to /view/FrontPage.
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+    http.Redirect(w, r, "/view/FrontPage", http.StatusFound)
+}
+
 func main() {
+    createFolder(dataFolder)
+    http.HandleFunc("/", rootHandler)
     http.HandleFunc("/view/", makeHandler(viewHandler))
     http.HandleFunc("/edit/", makeHandler(editHandler))
     http.HandleFunc("/save/", makeHandler(saveHandler))
