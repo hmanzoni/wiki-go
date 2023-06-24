@@ -1,12 +1,28 @@
-<h1>{{.Title}}</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <title>{{.Title}}</title>
+</head>
+<body class="container">
+    <h1>{{.Title}}</h1>
 
-<p>[<a href="/edit/{{.Title}}">edit</a>]</p>
-
-<div>{{printf "%s" .Body}}</div>
-
-<h2>Other files</h2>
-
-{{range .Files}}
-    <a href="/view/{{.}}">{{.}}</a>
-    <br>
-{{end}}
+    <div class="card">
+        <div class="card-body">
+            {{printf "%s" .Body}}
+        </div>
+    </div>
+    
+    <a href="/edit/{{.Title}}" class="btn btn-warning">Edit</a>
+    <hr class="border border-primary border-3 opacity-75">
+    <h2>Other files</h2>
+    {{range .Files}}
+        <a href="/view/{{.}}" class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover">
+            {{.}}
+        </a>
+        <br>
+    {{end}}
+</body>
+</html>
